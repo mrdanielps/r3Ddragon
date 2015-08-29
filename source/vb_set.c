@@ -24,7 +24,7 @@ void setDefaults(void) {
     tVBOpt.SCR_MODE = 0;
     tVBOpt.FIXPAL   = 0;
     tVBOpt.DISASM   = 0;
-    tVBOpt.SOUND    = 0;
+    tVBOpt.NOSOUND  = 1;
     tVBOpt.DSP2X    = 0;
 
     // Default keys
@@ -82,8 +82,8 @@ static int handler(void* user, const char* section, const char* name,
         pconfig->DISASM = atoi(value);
     } else if (MATCH("vbopt", "scr_mode")) {
         pconfig->SCR_MODE = atoi(value);
-    } else if (MATCH("vbopt", "sound")) {
-        pconfig->SOUND = atoi(value);
+    } else if (MATCH("vbopt", "nosound")) {
+        pconfig->NOSOUND = atoi(value);
     } else if (MATCH("keys", "lup")) {
         vbkey[VB_KCFG_LUP] = atoi(value);
     } else if (MATCH("keys", "ldown")) {
@@ -141,7 +141,7 @@ int saveFileOptions(void) {
     fprintf(f, "scr_mode=%d\n", tVBOpt.SCR_MODE);
     fprintf(f, "fixpal=%d\n", tVBOpt.FIXPAL);
     fprintf(f, "disasm=%d\n", tVBOpt.DISASM);
-    fprintf(f, "sound=%d\n", tVBOpt.SOUND);
+    fprintf(f, "nosound=%d\n", tVBOpt.NOSOUND);
     fprintf(f, "dsp2x=%d\n\n", tVBOpt.DSP2X);
 
     fprintf(f, "[keys]\n");

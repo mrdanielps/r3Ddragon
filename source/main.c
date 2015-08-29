@@ -12,6 +12,7 @@
 #include "drc_core.h"
 #include "vb_dsp.h"
 #include "vb_set.h"
+#include "vb_sound.h"
 #include "vb_gui.h"
 #include "rom_db.h"
 
@@ -197,6 +198,7 @@ int main() {
     }
 
     v810_reset();
+    sound_init();
     drc_init();
 
     clearCache();
@@ -259,8 +261,11 @@ int main() {
 
 exit:
     V810_DSP_Quit();
+    sound_close();
     drc_exit();
 
+    if (!tVBOpt.NOSOUND)
+        csndExit();
     sdmcExit();
     fsExit();
     hbExit();

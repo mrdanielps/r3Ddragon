@@ -50,7 +50,7 @@ typedef struct VB_OPT {
     int   FIXPAL;   // Use a fixed pallet, no brightness...
     int   DISASM;   // Interactive disassembly of all executed instructions...
     int   SCR_MODE; // 0-VGA, 1-VESA1, 2-VESA2
-    int   SOUND;
+    int   NOSOUND;
     char *ROM_NAME; // Path\Name of game to open
     char *PROG_NAME; // Path\Name of program
     unsigned long CRC32; // CRC32 of ROM

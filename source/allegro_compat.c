@@ -2,16 +2,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+
+#include <3ds.h>
+
 #include "allegro_compat.h"
 #include "vb_dsp.h"
 #include "vb_set.h"
-
-#include <3ds.h>
 
 // The max number of items that can fit in the screen
 #define MAX_ITEMS 28
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
+
+// Graphics stuff
 
 void masked_blit(BITMAP *src, BITMAP *dst, int src_x, int src_y, int dst_x, int dst_y, int w, int h) {
     int x, y;
@@ -86,6 +89,167 @@ void clear_to_color(BITMAP *bitmap, int color) {
     if (bitmap) {
         memset(bitmap->dat, color, (bitmap->w)*(bitmap->h));
     }
+}
+
+// Sound stuff
+
+typedef struct {
+    bool playing;
+    int pos;
+    int rate;
+    float vol;
+    float pan;
+    SAMPLE* spl;
+} csnd_channel;
+
+csnd_channel* channels;
+u32 available;
+
+int install_sound(int digi, int midi, const char *config_path) {
+#if DEBUGLEVEL == 0
+    if (csndInit())
+        return -1;
+    available = csndChannels;
+#else
+    available = 0xFFFFFF00;
+#endif
+
+    channels = calloc(32, sizeof(csnd_channel));
+
+    return 0;
+}
+
+void remove_sound() {
+    free(channels);
+}
+
+SAMPLE* create_sample(int bits, int stereo, int freq, int len) {
+    SAMPLE* spl;
+
+    spl = malloc(sizeof(SAMPLE));
+    if (!spl)
+        return NULL;
+
+    spl->bits = bits;
+    spl->stereo = stereo;
+    spl->freq = freq;
+    spl->priority = 128;
+    spl->len = len;
+    spl->loop_start = 0;
+    spl->loop_end = len;
+    spl->param = 0;
+
+    spl->data = linearAlloc(len * ((bits==8) ? 1 : sizeof(short)) * ((stereo) ? 2 : 1));
+    if (!spl->data) {
+        free(spl);
+        return NULL;
+    }
+
+    return spl;
+}
+
+void destroy_sample(SAMPLE *spl) {
+    if (spl) {
+        if (spl->data)
+            linearFree(spl->data);
+        free(spl);
+    }
+}
+
+int allocate_voice(SAMPLE* spl) {
+    int i;
+
+    for (i = 0; i < 32; i++) {
+        if ((available>>i) & 1) {
+            available &= ~(1<<i);
+            channels[i].playing = false;
+            channels[i].pos = 0;
+            channels[i].rate = 0;
+            channels[i].spl = spl;
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+void voice_set_playmode(int voice, int playmode) {
+    if (playmode == PLAYMODE_LOOP)
+        CSND_SetLooping(voice, 1);
+    else
+        CSND_SetLooping(voice, 0);
+}
+
+void voice_stop(int voice) {
+    CSND_SetPlayState(voice, 0);
+    channels[voice].playing = false;
+}
+
+void deallocate_voice(int voice) {
+    voice_stop(voice);
+    available |= 1<<voice;
+}
+
+void voice_sweep_frequency(int voice, int time, int endfreq) {
+    // TODO: Actually sweep
+    channels[voice].rate = endfreq;
+}
+
+void voice_set_position(int voice, int position) {
+    channels[voice].pos = position;
+    if (channels[voice].playing && position == 0)
+        voice_start(voice);
+}
+
+void voice_start(int voice) {
+    // Don't play the sound if the voice isn't allocated
+    if (available & (1<<voice))
+        return;
+    if (!channels[voice].spl || !channels[voice].spl->data)
+        return;
+
+    int sound_format = channels[voice].spl->bits == 8 ? SOUND_FORMAT_8BIT : SOUND_FORMAT_16BIT;
+    channels[voice].playing = true;
+    csndPlaySound(SOUND_CHANNEL(voice),
+                  SOUND_REPEAT | sound_format,
+                  (u32)(channels[voice].rate),
+                  channels[voice].vol,
+                  channels[voice].pan,
+                  channels[voice].spl->data,
+                  NULL,
+                  (u32)(channels[voice].spl->len * channels[voice].spl->bits/8)
+    );
+}
+
+void voice_set_volume(int voice, int volume) {
+    channels[voice].vol = volume/255.0f;
+    if (channels[voice].playing)
+        CSND_SetVol((u32)voice, CSND_VOL(channels[voice].vol, channels[voice].pan), 0);
+}
+
+int voice_get_volume(int voice) {
+    return (int)(channels[voice].vol*255);
+}
+
+void voice_set_pan(int voice, int pan) {
+    channels[voice].pan = pan/128.0f - 1;
+    if (channels[voice].playing)
+        CSND_SetVol((u32)voice, CSND_VOL(channels[voice].vol, channels[voice].pan), 0);
+}
+
+void voice_ramp_volume(int voice, int time, int endvol) {
+    // TODO: Actually ramp
+    voice_set_volume(voice, endvol);
+}
+
+void voice_set_frequency(int voice, int frequency) {
+    channels[voice].rate = frequency;
+    if (channels[voice].playing)
+        voice_start(voice);
+}
+
+int voice_get_frequency(int voice) {
+    return channels[voice].rate;
 }
 
 // The following is not exactly allegro stuff
