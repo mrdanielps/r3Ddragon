@@ -1,60 +1,11 @@
 r3Ddragon
 =========
 
-A WIP Virtual Boy emulator for the 3DS based on Reality Boy / Red Dragon. You can see the current progress
-[here](https://github.com/mrdanielps/r3Ddragon/wiki/Current-progress) and a video of it working
-[here](https://youtu.be/xJ9323yaQJY).
+A WIP Virtual Boy emulator for the Nintendo 3DS based on Reality Boy / Red Dragon.
 
-There's an experimental dynarec implemented but it still needs optimizing.
+**THIS PROJECT IS NO LONGER MAINTAINED.**
 
-### Usage
-
-You can place place ROMs in /vb/.
-
-If it doesn't exist, `rd_config.ini` will be created. Some relevant options you can change are:
-
- * _maxcycles_: A lower value will improve compatibility, but it will run slower.
- * _frmskip_: Number of frames to skip before drawing.
- * _debug_: If set to 1, prints debug info.
- * _sound_: Enables sound.
- * _dynarec_: If set to 0, tries to load the dynarec cache from a file instead of recompiling.
-
-The 3dsx will only work on exploitable system versions (<=11.2) after running [fasthax](https://github.com/nedwill/fasthax/releases).
-
-### FAQs
-
-> Why would you make a Virtual Boy emulator? Nobody asked for it.
-
-The 3DS is the perfect system to faithfully emulate the Virtual Boy. They have similar screen resolutions, the
- 3D effect is better and it's actually portable.
-
-> OK, but wasn't the Virtual Boy, like, the worst console ever?
-
-There were many reasons why it was commercial failure. That doesn't mean the console is bad, or the games
-aren't worth playing. It's definitely received way more hate than it deserved.
-
-Plus, it has a nice homebrew scene with gems such as Hyper Fighting, Snatcher and many more.
-
-> Do I need a new 3DS to run this?
-
-Unfortunately, yes. The old 3DS is too slow to run it at a playable speed. That might change in the future,
-but it's unlikely.
-
-> Where can I download it?
-
-You can find the latest release [here](https://github.com/mrdanielps/r3Ddragon/releases).
-
-### Building
-
-Once you have [ctrulib installed](http://3dbrew.org/wiki/Setting_up_Development_Environment), you can choose
-between four different make targets:
-
-* **`make release`** adds `-O3` to CFLAGS. It's meant to be run on an actual 3DS and will output basic debug info to stdout only if enabled in `rd_config.ini`.
-* **`make testing`** adds `-O3` to CFLAGS. It's meant to be run on an emulator (citra or 3dmoo). It will output basic debug info to the terminal.
-* **`make debug`** adds `-g -O0` to CFLAGS. It builds without optimizations so it can be debugged with gdb.
-* **`make slowdebug`** adds `-g -O0` to CFLAGS. It will output a lot of debug information, which will slow emulation down but might be helpful to debug game-specific issues.
-
-For easier debugging, you can build it for arm-linux (tested on a Raspberry Pi) with `make -f Makefile.linux` or for android using `ndk-build`.
+**You should check out [Red Viper](https://github.com/skyfloogle/red-viper) instead, a fork with better game support and performance.**
 
 ### License
 
